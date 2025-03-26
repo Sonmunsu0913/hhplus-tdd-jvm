@@ -1,9 +1,5 @@
 package io.hhplus.tdd.point;
 
-import io.hhplus.tdd.database.PointHistoryTable;
-import io.hhplus.tdd.database.UserPointTable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -12,13 +8,10 @@ import java.util.List;
 @RequestMapping("/point")
 public class PointController {
 
-    private static final Logger log = LoggerFactory.getLogger(PointController.class);
-    private final UserPointTable userPointTable;
-    private final PointHistoryTable pointHistoryTable;
+    private final PointService pointService;
 
-    public PointController(UserPointTable userPointTable, PointHistoryTable pointHistoryTable) {
-        this.userPointTable = userPointTable;
-        this.pointHistoryTable = pointHistoryTable;
+    public PointController(PointService pointService) {
+        this.pointService = pointService;
     }
 
     /**
@@ -26,8 +19,7 @@ public class PointController {
      */
     @GetMapping("{id}")
     public UserPoint point(@PathVariable long id) {
-        return userPointTable.selectById(id);
-//        return new UserPoint(0, 0, 0);
+        return pointService.getPoint(id);
     }
 
     /**
@@ -35,8 +27,7 @@ public class PointController {
      */
     @GetMapping("{id}/histories")
     public List<PointHistory> history(@PathVariable long id) {
-        return pointHistoryTable.selectAllByUserId(id);
-//        return List.of();
+        return pointService.getHistory(id);
     }
 
     /**
@@ -44,13 +35,7 @@ public class PointController {
      */
     @PatchMapping("{id}/charge")
     public UserPoint charge(@PathVariable long id, @RequestBody long amount) {
-        UserPoint userPoint = userPointTable.selectById(id);
-        long chargedAmount = userPoint.point() + amount;
-        UserPoint charged = userPointTable.insertOrUpdate(id, chargedAmount);
-
-        pointHistoryTable.insert(id, chargedAmount, TransactionType.CHARGE, charged.updateMillis());
-        return charged;
-//        return new UserPoint(0, 0, 0);
+        return pointService.charge(id, amount);
     }
 
     /**
@@ -58,16 +43,6 @@ public class PointController {
      */
     @PatchMapping("{id}/use")
     public UserPoint use(@PathVariable long id, @RequestBody long amount) {
-        UserPoint userPoint = userPointTable.selectById(id);
-        if (userPoint.point() < amount) {
-            throw new IllegalStateException("포인트 부족");
-        }
-
-        long usedAmount = userPoint.point() - amount;
-        UserPoint used = userPointTable.insertOrUpdate(id, usedAmount);
-
-        pointHistoryTable.insert(id, usedAmount, TransactionType.USE, used.updateMillis());
-        return used;
-        //        return new UserPoint(0, 0, 0);
+        return pointService.use(id, amount);
     }
 }
