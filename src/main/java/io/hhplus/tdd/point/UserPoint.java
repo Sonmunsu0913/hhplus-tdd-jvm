@@ -11,6 +11,9 @@ public record UserPoint(
     }
 
     public UserPoint charge(long amount) {
+        if (this.point + amount > 1000000L) {
+            throw new IllegalStateException("최대 잔고를 넘을 수 없습니다. (최대: 1,000,000)");
+        }
         return new UserPoint(this.id, this.point + amount, System.currentTimeMillis());
     }
 
