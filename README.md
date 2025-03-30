@@ -26,7 +26,7 @@ a
 
 ## 상황별 선택
 
-| 상황                | 추천 방식 |
+| 상황                | 추천 방식 | 
 |-------------------|-----------|
 | 간단한 단일 서버 환경      | `synchronized`, `ReentrantLock` |
 | 사용자 단위로 락 분리      | `ConcurrentHashMap<Long, Lock>` |
